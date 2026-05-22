@@ -10,13 +10,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...config,
-    name: 'Your App Name',
-    slug: 'your-app-slug',
+    name: 'Imakwa',
+    slug: 'imakwa',
     newArchEnabled: true,
     version: '1.0.0',
     orientation: 'portrait',
     userInterfaceStyle: 'automatic',
-    scheme: 'yourapp',
+    scheme: 'imakwa',
     runtimeVersion: {
       policy: 'appVersion',
     },
@@ -26,10 +26,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         ITSAppUsesNonExemptEncryption: false,
       },
       supportsTablet: true,
-      bundleIdentifier: 'com.yourcompany.yourapp',
+      bundleIdentifier: 'me.bilt.imakwa',
     },
     android: {
-      package: 'com.yourcompany.yourapp',
+      package: 'me.bilt.imakwa',
     },
     plugins: ['expo-router', 'expo-font', ...nativePlugins],
     experiments: {
