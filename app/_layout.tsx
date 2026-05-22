@@ -163,7 +163,19 @@ export default function RootLayout() {
         <GestureHandlerRootView style={{ flex: 1 }}>
           <ToastProvider>
             <Stack>
-              <Stack.Screen name="(tabs)" options={{ title: 'Habits', headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="question/[id]"
+                options={{ title: 'Question', headerBackTitle: 'Back' }}
+              />
+              <Stack.Screen
+                name="ask"
+                options={{ presentation: 'modal', title: 'Ask Question', headerShown: false }}
+              />
+              <Stack.Screen
+                name="topic/[id]"
+                options={{ title: 'Topic', headerBackTitle: 'Back' }}
+              />
             </Stack>
           </ToastProvider>
         </GestureHandlerRootView>
