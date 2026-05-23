@@ -1,7 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { ArrowDown, ArrowUp, MessageCircle, Share2, UserPlus } from 'lucide-react-native';
 
 import {
@@ -73,7 +73,7 @@ export default function QuestionDetail() {
         contentContainerStyle={{ paddingBottom: 120 }}
         ItemSeparatorComponent={() => <View className="h-2 bg-muted/30" />}
         ListHeaderComponent={
-          <ScrollView>
+          <View>
             <View className="bg-card p-4 gap-3 border-b border-border">
               <View className="flex-row flex-wrap gap-1.5">
                 {topics.map((t) => (
@@ -226,7 +226,7 @@ export default function QuestionDetail() {
                 ))}
               </View>
             </View>
-          </ScrollView>
+          </View>
         }
         ListEmptyComponent={
           <View className="px-6 py-10 items-center">

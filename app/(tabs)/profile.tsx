@@ -1,4 +1,3 @@
-import { FlashList } from '@shopify/flash-list';
 import { ScrollView, View } from 'react-native';
 import { useState } from 'react';
 import { MapPin, Settings, Shield } from 'lucide-react-native';
@@ -39,45 +38,39 @@ export default function ProfileScreen() {
 
   const renderTabContent = () => {
     if (tab === 'questions') {
+      if (myQuestions.length === 0) {
+        return (
+          <Card className="p-6 items-center mx-3 my-3">
+            <Text className="text-center text-[13px] text-muted-foreground">
+              You have not asked any questions yet. Tap Ask to share what is on your mind.
+            </Text>
+          </Card>
+        );
+      }
       return (
-        <FlashList
-          data={myQuestions}
-          keyExtractor={(item) => item.id}
-          // @ts-expect-error estimatedItemSize is valid in FlashList v2
-          estimatedItemSize={280}
-          contentContainerStyle={{ padding: 12, paddingBottom: 60 }}
-          ItemSeparatorComponent={() => <View className="h-3" />}
-          ListEmptyComponent={
-            <Card className="p-6 items-center">
-              <Text className="text-center text-[13px] text-muted-foreground">
-                You have not asked any questions yet. Tap Ask to share what is on your mind.
-              </Text>
-            </Card>
-          }
-          renderItem={({ item }) => <QuestionCard question={item} />}
-        />
+        <View className="px-3 py-3 gap-3">
+          {myQuestions.map((item) => (
+            <QuestionCard key={item.id} question={item} />
+          ))}
+        </View>
       );
     }
     if (tab === 'answers') {
+      if (myAnswers.length === 0) {
+        return (
+          <Card className="p-6 items-center mx-3 my-3">
+            <Text className="text-center text-[13px] text-muted-foreground">
+              You have not answered any questions yet.
+            </Text>
+          </Card>
+        );
+      }
       return (
-        <FlashList
-          data={myAnswers}
-          keyExtractor={(item) => item.id}
-          // @ts-expect-error estimatedItemSize is valid in FlashList v2
-          estimatedItemSize={160}
-          contentContainerStyle={{ padding: 12, paddingBottom: 60 }}
-          ItemSeparatorComponent={() => <View className="h-3" />}
-          ListEmptyComponent={
-            <Card className="p-6 items-center">
-              <Text className="text-center text-[13px] text-muted-foreground">
-                You have not answered any questions yet.
-              </Text>
-            </Card>
-          }
-          renderItem={({ item }) => {
+        <View className="px-3 py-3 gap-3">
+          {myAnswers.map((item) => {
             const q = questions.find((x) => x.id === item.questionId);
             return (
-              <Card className="p-4 gap-2">
+              <Card key={item.id} className="p-4 gap-2">
                 <Text className="text-[12px] font-semibold text-muted-foreground" numberOfLines={2}>
                   Re: {q?.title ?? 'Question'}
                 </Text>
@@ -89,27 +82,23 @@ export default function ProfileScreen() {
                 </Text>
               </Card>
             );
-          }}
-        />
+          })}
+        </View>
+      );
+    }
+    if (followedTopics.length === 0) {
+      return (
+        <Card className="p-6 items-center mx-3 my-3">
+          <Text className="text-center text-[13px] text-muted-foreground">
+            You are not following any topics yet.
+          </Text>
+        </Card>
       );
     }
     return (
-      <FlashList
-        data={followedTopics}
-        keyExtractor={(item) => item.id}
-        // @ts-expect-error estimatedItemSize is valid in FlashList v2
-        estimatedItemSize={80}
-        contentContainerStyle={{ padding: 12, paddingBottom: 60 }}
-        ItemSeparatorComponent={() => <View className="h-2" />}
-        ListEmptyComponent={
-          <Card className="p-6 items-center">
-            <Text className="text-center text-[13px] text-muted-foreground">
-              You are not following any topics yet.
-            </Text>
-          </Card>
-        }
-        renderItem={({ item }) => (
-          <Card className="p-3 flex-row items-center gap-3">
+      <View className="px-3 py-3 gap-2">
+        {followedTopics.map((item) => (
+          <Card key={item.id} className="p-3 flex-row items-center gap-3">
             <View className="h-10 w-10 rounded-lg bg-primary items-center justify-center">
               <Text className="text-[13px] font-bold text-primary-foreground">
                 {item.name.slice(0, 2).toUpperCase()}
@@ -122,15 +111,15 @@ export default function ProfileScreen() {
               </Text>
             </View>
           </Card>
-        )}
-      />
+        ))}
+      </View>
     );
   };
 
   return (
     <View className="flex-1 bg-background">
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 0 }}
+        contentContainerStyle={{ paddingBottom: 80 }}
         stickyHeaderIndices={[1]}
         showsVerticalScrollIndicator={false}>
         {/* Header */}
@@ -213,7 +202,7 @@ export default function ProfileScreen() {
           <Separator />
         </View>
 
-        <View style={{ minHeight: 500 }}>{renderTabContent()}</View>
+        {renderTabContent()}
       </ScrollView>
     </View>
   );
