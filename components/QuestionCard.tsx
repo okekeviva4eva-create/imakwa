@@ -1,5 +1,6 @@
 import { Pressable, View } from 'react-native';
 import { Link } from 'expo-router';
+import { useMemo } from 'react';
 import { ArrowDown, ArrowUp, Eye, MessageCircle, Share2, UserPlus } from 'lucide-react-native';
 
 import { Avatar, AvatarFallback, Badge, Card, Text } from '@/components/ui';
@@ -18,21 +19,35 @@ type Props = {
 };
 
 export function QuestionCard({ question, className }: Props) {
-  const author = useStore((s) => s.users.find((u) => u.id === question.authorId));
-  const topics = useStore((s) =>
-    s.topics.filter((t) => question.topicIds.includes(t.id)),
-  );
+  const users = useStore((s) => s.users);
+  const allTopics = useStore((s) => s.topics);
   const allAnswers = useStore((s) => s.answers);
   const followedQuestionIds = useStore((s) => s.followedQuestionIds);
   const toggleFollowQuestion = useStore((s) => s.toggleFollowQuestion);
   const voteAnswer = useStore((s) => s.voteAnswer);
 
-  const answersForQ = allAnswers.filter((a) => a.questionId === question.id);
-  const topAnswer: Answer | undefined = [...answersForQ].toSorted(
-    (a, b) => b.upvotes - b.downvotes - (a.upvotes - a.downvotes),
-  )[0];
-  const topAnswerAuthor = useStore((s) =>
-    topAnswer ? s.users.find((u) => u.id === topAnswer.authorId) : undefined,
+  const author = useMemo(
+    () => users.find((u) => u.id === question.authorId),
+    [users, question.authorId],
+  );
+  const topics = useMemo(
+    () => allTopics.filter((t) => question.topicIds.includes(t.id)),
+    [allTopics, question.topicIds],
+  );
+  const answersForQ = useMemo(
+    () => allAnswers.filter((a) => a.questionId === question.id),
+    [allAnswers, question.id],
+  );
+  const topAnswer: Answer | undefined = useMemo(
+    () =>
+      [...answersForQ].toSorted(
+        (a, b) => b.upvotes - b.downvotes - (a.upvotes - a.downvotes),
+      )[0],
+    [answersForQ],
+  );
+  const topAnswerAuthor = useMemo(
+    () => (topAnswer ? users.find((u) => u.id === topAnswer.authorId) : undefined),
+    [users, topAnswer],
   );
 
   const isFollowing = followedQuestionIds.includes(question.id);

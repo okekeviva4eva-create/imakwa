@@ -26,20 +26,34 @@ type Sort = 'top' | 'recent';
 
 export default function QuestionDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const question = useStore((s) => s.questions.find((q) => q.id === id));
-  const author = useStore((s) =>
-    question ? s.users.find((u) => u.id === question.authorId) : undefined,
-  );
-  const topics = useStore((s) =>
-    question ? s.topics.filter((t) => question.topicIds.includes(t.id)) : [],
-  );
-  const allAnswers = useStore((s) => s.answers.filter((a) => a.questionId === id));
-  const users = useStore((s) => s.users);
+  const allQuestions = useStore((s) => s.questions);
+  const allUsers = useStore((s) => s.users);
+  const allTopics = useStore((s) => s.topics);
+  const allAnswersInStore = useStore((s) => s.answers);
   const followedQuestionIds = useStore((s) => s.followedQuestionIds);
   const toggleFollowQuestion = useStore((s) => s.toggleFollowQuestion);
   const voteAnswer = useStore((s) => s.voteAnswer);
   const addAnswer = useStore((s) => s.addAnswer);
   const toast = useToast();
+
+  const question = useMemo(
+    () => allQuestions.find((q) => q.id === id),
+    [allQuestions, id],
+  );
+  const author = useMemo(
+    () => (question ? allUsers.find((u) => u.id === question.authorId) : undefined),
+    [allUsers, question],
+  );
+  const topics = useMemo(
+    () =>
+      question ? allTopics.filter((t) => question.topicIds.includes(t.id)) : [],
+    [allTopics, question],
+  );
+  const allAnswers = useMemo(
+    () => allAnswersInStore.filter((a) => a.questionId === id),
+    [allAnswersInStore, id],
+  );
+  const users = allUsers;
 
   const [sort, setSort] = useState<Sort>('top');
   const [draft, setDraft] = useState('');

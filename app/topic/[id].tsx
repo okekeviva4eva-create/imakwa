@@ -1,5 +1,6 @@
 import { FlashList } from '@shopify/flash-list';
 import { useLocalSearchParams } from 'expo-router';
+import { useMemo } from 'react';
 import { View } from 'react-native';
 
 import { Badge, Button, Card, Text } from '@/components/ui';
@@ -9,14 +10,20 @@ import { formatCount, useStore } from '@/lib/store';
 
 export default function TopicDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const topic = useStore((s) => s.topics.find((t) => t.id === id));
-  const questions = useStore((s) =>
-    s.questions
-      .filter((q) => q.topicIds.includes(id ?? ''))
-      .sort((a, b) => b.followers - a.followers),
-  );
-  const isFollowing = useStore((s) => s.followedTopicIds.includes(id ?? ''));
+  const allTopics = useStore((s) => s.topics);
+  const allQuestions = useStore((s) => s.questions);
+  const followedTopicIds = useStore((s) => s.followedTopicIds);
   const toggleFollowTopic = useStore((s) => s.toggleFollowTopic);
+
+  const topic = useMemo(() => allTopics.find((t) => t.id === id), [allTopics, id]);
+  const questions = useMemo(
+    () =>
+      allQuestions
+        .filter((q) => q.topicIds.includes(id ?? ''))
+        .toSorted((a, b) => b.followers - a.followers),
+    [allQuestions, id],
+  );
+  const isFollowing = followedTopicIds.includes(id ?? '');
 
   if (!topic) {
     return (

@@ -1,5 +1,5 @@
 import { ScrollView, View } from 'react-native';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { MapPin, Settings, Shield } from 'lucide-react-native';
 
 import {
@@ -20,14 +20,26 @@ type Tab = 'questions' | 'answers' | 'topics';
 
 export default function ProfileScreen() {
   const [tab, setTab] = useState<Tab>('questions');
-  const me = useStore((s) => s.users.find((u) => u.id === s.currentUserId));
+  const users = useStore((s) => s.users);
   const meId = useStore((s) => s.currentUserId);
-  const myQuestions = useStore((s) => s.questions.filter((q) => q.authorId === meId));
-  const myAnswers = useStore((s) => s.answers.filter((a) => a.authorId === meId));
-  const followedTopics = useStore((s) =>
-    s.topics.filter((t) => s.followedTopicIds.includes(t.id)),
-  );
   const questions = useStore((s) => s.questions);
+  const answers = useStore((s) => s.answers);
+  const topics = useStore((s) => s.topics);
+  const followedTopicIds = useStore((s) => s.followedTopicIds);
+
+  const me = useMemo(() => users.find((u) => u.id === meId), [users, meId]);
+  const myQuestions = useMemo(
+    () => questions.filter((q) => q.authorId === meId),
+    [questions, meId],
+  );
+  const myAnswers = useMemo(
+    () => answers.filter((a) => a.authorId === meId),
+    [answers, meId],
+  );
+  const followedTopics = useMemo(
+    () => topics.filter((t) => followedTopicIds.includes(t.id)),
+    [topics, followedTopicIds],
+  );
 
   if (!me) return null;
   const initials = me.name
