@@ -29,7 +29,11 @@ import {
   type ErrorBoundaryProps,
   SplashScreen,
   Stack,
+  useRouter,
+  useSegments,
 } from 'expo-router';
+
+import { useAuthStore } from '@/lib/authStore';
 
 /**
  * Custom ErrorBoundary that reports React render errors to the parent window (Bilt preview iframe)
@@ -52,6 +56,10 @@ void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { colorScheme, setColorScheme } = useColorScheme();
+  const status = useAuthStore((s) => s.status);
+  const initAuth = useAuthStore((s) => s.init);
+  const segments = useSegments();
+  const router = useRouter();
 
   const [loaded, error] = useFonts({
     Inter_400Regular,
@@ -152,6 +160,21 @@ export default function RootLayout() {
     }
   }, []);
 
+  useEffect(() => {
+    void initAuth();
+  }, [initAuth]);
+
+  // Auth-aware redirects: keep unauthenticated users in (auth), authenticated users in (tabs).
+  useEffect(() => {
+    if (status === 'loading') return;
+    const inAuthGroup = segments[0] === '(auth)';
+    if (status === 'unauthenticated' && !inAuthGroup) {
+      router.replace('/(auth)/landing');
+    } else if (status === 'authenticated' && inAuthGroup) {
+      router.replace('/(tabs)');
+    }
+  }, [status, segments, router]);
+
   if (!loaded && !error) {
     return null;
   }
@@ -163,6 +186,7 @@ export default function RootLayout() {
         <GestureHandlerRootView style={{ flex: 1 }}>
           <ToastProvider>
             <Stack>
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen
                 name="question/[id]"

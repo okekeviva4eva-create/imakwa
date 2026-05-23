@@ -1,6 +1,6 @@
 import { ScrollView, View } from 'react-native';
 import { useMemo, useState } from 'react';
-import { MapPin, Settings, Shield } from 'lucide-react-native';
+import { LogOut, MapPin, Settings, Shield } from 'lucide-react-native';
 
 import {
   Avatar,
@@ -14,6 +14,7 @@ import {
 import { QuestionCard } from '@/components/QuestionCard';
 import { cn } from '@/lib/utils';
 import { formatCount, useStore } from '@/lib/store';
+import { useAuthStore } from '@/lib/authStore';
 import { Pressable } from 'react-native';
 
 type Tab = 'questions' | 'answers' | 'topics';
@@ -26,6 +27,8 @@ export default function ProfileScreen() {
   const answers = useStore((s) => s.answers);
   const topics = useStore((s) => s.topics);
   const followedTopicIds = useStore((s) => s.followedTopicIds);
+  const authUser = useAuthStore((s) => s.user);
+  const signOut = useAuthStore((s) => s.signOut);
 
   const me = useMemo(() => users.find((u) => u.id === meId), [users, meId]);
   const myQuestions = useMemo(
@@ -156,6 +159,11 @@ export default function ProfileScreen() {
                 <Text className="text-[12px] text-muted-foreground">{me.state} State</Text>
               </View>
               <Text className="text-[13px] leading-[18px] text-foreground">{me.bio}</Text>
+              {authUser?.email && (
+                <Text className="text-[12px] text-muted-foreground">
+                  Signed in as {authUser.email}
+                </Text>
+              )}
             </View>
             <Pressable
               className="h-10 w-10 rounded-full bg-secondary items-center justify-center"
@@ -187,6 +195,16 @@ export default function ProfileScreen() {
               <Text className="text-[13px] font-semibold">Share</Text>
             </Button>
           </View>
+
+          <Button
+            variant="outline"
+            onPress={() => {
+              void signOut();
+            }}
+            className="flex-row items-center justify-center gap-2 border-destructive/40">
+            <LogOut size={16} color="hsl(0 75% 50%)" />
+            <Text className="text-[13px] font-semibold text-destructive">Sign out</Text>
+          </Button>
         </View>
 
         {/* Tabs (sticky) */}
