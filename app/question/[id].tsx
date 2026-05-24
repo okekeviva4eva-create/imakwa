@@ -1,6 +1,6 @@
 import { FlashList } from '@shopify/flash-list';
 import { Link, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { ArrowDown, ArrowUp, MessageCircle, Share2, UserPlus } from 'lucide-react-native';
 
@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import {
   formatCount,
   formatRelativeTime,
+  selectCommentsForAnswer,
   useStore,
   type Answer,
 } from '@/lib/store';
@@ -34,6 +35,7 @@ export default function QuestionDetail() {
   const toggleFollowQuestion = useStore((s) => s.toggleFollowQuestion);
   const voteAnswer = useStore((s) => s.voteAnswer);
   const addAnswer = useStore((s) => s.addAnswer);
+  const recordView = useStore((s) => s.recordView);
   const toast = useToast();
 
   const question = useMemo(
@@ -45,19 +47,23 @@ export default function QuestionDetail() {
     [allUsers, question],
   );
   const topics = useMemo(
-    () =>
-      question ? allTopics.filter((t) => question.topicIds.includes(t.id)) : [],
+    () => (question ? allTopics.filter((t) => question.topicIds.includes(t.id)) : []),
     [allTopics, question],
   );
   const allAnswers = useMemo(
     () => allAnswersInStore.filter((a) => a.questionId === id),
     [allAnswersInStore, id],
   );
-  const users = allUsers;
 
   const [sort, setSort] = useState<Sort>('top');
   const [draft, setDraft] = useState('');
   const [composing, setComposing] = useState(false);
+  const [posting, setPosting] = useState(false);
+
+  // Bump views once when question loads
+  useEffect(() => {
+    if (id) recordView(id);
+  }, [id, recordView]);
 
   const sorted = useMemo(() => {
     const list = [...allAnswers];
@@ -77,13 +83,36 @@ export default function QuestionDetail() {
 
   const isFollowing = followedQuestionIds.includes(question.id);
 
+  const submitAnswer = async () => {
+    if (draft.trim().length < 10 || posting) return;
+    setPosting(true);
+    try {
+      await addAnswer(question.id, draft.trim());
+      setDraft('');
+      setComposing(false);
+      toast.toast({
+        title: 'Answer posted',
+        description: 'Your voice is part of the conversation.',
+        variant: 'success',
+      });
+    } catch (e) {
+      toast.toast({
+        title: 'Could not post',
+        description: e instanceof Error ? e.message : 'Try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setPosting(false);
+    }
+  };
+
   return (
     <View className="flex-1 bg-background">
       <FlashList
         data={sorted}
         keyExtractor={(item) => item.id}
         // @ts-expect-error estimatedItemSize is valid in FlashList v2
-        estimatedItemSize={220}
+        estimatedItemSize={260}
         contentContainerStyle={{ paddingBottom: 120 }}
         ItemSeparatorComponent={() => <View className="h-2 bg-muted/30" />}
         ListHeaderComponent={
@@ -132,7 +161,9 @@ export default function QuestionDetail() {
                 </Text>
               </View>
 
-              <Text className="text-[14px] leading-[22px] text-foreground">{question.body}</Text>
+              {question.body ? (
+                <Text className="text-[14px] leading-[22px] text-foreground">{question.body}</Text>
+              ) : null}
 
               <View className="flex-row items-center gap-2 pt-2 border-t border-border">
                 <Button
@@ -193,19 +224,10 @@ export default function QuestionDetail() {
                     </Button>
                     <Button
                       size="sm"
-                      disabled={draft.trim().length < 10}
-                      onPress={() => {
-                        addAnswer(question.id, draft.trim());
-                        setDraft('');
-                        setComposing(false);
-                        toast.toast({
-                          title: 'Answer posted',
-                          description: 'Your voice is part of the conversation.',
-                          variant: 'success',
-                        });
-                      }}>
+                      disabled={draft.trim().length < 10 || posting}
+                      onPress={() => void submitAnswer()}>
                       <Text className="text-[13px] font-semibold text-primary-foreground">
-                        Post answer
+                        {posting ? 'Posting...' : 'Post answer'}
                       </Text>
                     </Button>
                   </View>
@@ -252,7 +274,7 @@ export default function QuestionDetail() {
         renderItem={({ item }) => (
           <AnswerCard
             answer={item}
-            author={users.find((u) => u.id === item.authorId)}
+            author={allUsers.find((u) => u.id === item.authorId)}
             onVote={(v) => voteAnswer(item.id, v)}
           />
         )}
@@ -270,11 +292,50 @@ function AnswerCard({
   author?: ReturnType<typeof useStore.getState>['users'][number];
   onVote: (v: 'up' | 'down') => void;
 }) {
+  const users = useStore((s) => s.users);
+  const comments = useStore(selectCommentsForAnswer(answer.id));
+  const loadCommentsFor = useStore((s) => s.loadCommentsFor);
+  const addComment = useStore((s) => s.addComment);
+  const toast = useToast();
+
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [posting, setPosting] = useState(false);
+
   const initials = (author?.name ?? 'U')
     .split(' ')
     .map((p) => p[0])
     .slice(0, 2)
     .join('');
+
+  const toggleComments = async () => {
+    const next = !open;
+    setOpen(next);
+    if (next) {
+      try {
+        await loadCommentsFor(answer.id);
+      } catch {
+        // best-effort; UI shows whatever is in cache
+      }
+    }
+  };
+
+  const submitComment = async () => {
+    if (draft.trim().length < 2 || posting) return;
+    setPosting(true);
+    try {
+      await addComment(answer.id, draft.trim());
+      setDraft('');
+    } catch (e) {
+      toast.toast({
+        title: 'Could not comment',
+        description: e instanceof Error ? e.message : 'Try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setPosting(false);
+    }
+  };
 
   return (
     <View className="bg-card p-4 gap-3">
@@ -289,7 +350,8 @@ function AnswerCard({
             {author?.name ?? 'User'}
           </Text>
           <Text className="text-[11px] text-muted-foreground" numberOfLines={1}>
-            {author?.credentials ?? `${author?.state ?? ''} · ${formatCount(author?.followers ?? 0)} followers`}
+            {author?.credentials ??
+              `${author?.state ?? ''}${author?.followers ? ` · ${formatCount(author.followers)} followers` : ''}`}
           </Text>
         </View>
         <Text className="text-[11px] text-muted-foreground">
@@ -332,7 +394,10 @@ function AnswerCard({
         </View>
 
         <View className="flex-row items-center gap-2">
-          <Pressable className="flex-row items-center gap-1 px-3 py-2 rounded-full bg-secondary min-h-[40px]">
+          <Pressable
+            onPress={() => void toggleComments()}
+            className="flex-row items-center gap-1 px-3 py-2 rounded-full bg-secondary min-h-[40px]"
+            accessibilityLabel="Toggle comments">
             <MessageCircle size={14} color="hsl(150 10% 40%)" />
             <Text className="text-[12px] font-semibold text-secondary-foreground">
               {answer.comments}
@@ -345,6 +410,62 @@ function AnswerCard({
           </Pressable>
         </View>
       </View>
+
+      {open ? (
+        <View className="gap-3 pt-1">
+          <Separator />
+          {comments.length === 0 ? (
+            <Text className="text-[12px] italic text-muted-foreground">
+              No comments yet. Be the first to add context.
+            </Text>
+          ) : (
+            <View className="gap-2">
+              {comments.map((c) => {
+                const cAuthor = users.find((u) => u.id === c.authorId);
+                return (
+                  <View key={c.id} className="flex-row items-start gap-2">
+                    <Avatar className="h-6 w-6 bg-secondary">
+                      <AvatarFallback>
+                        <Text className="text-[10px] font-semibold text-secondary-foreground">
+                          {(cAuthor?.name ?? 'U').slice(0, 1)}
+                        </Text>
+                      </AvatarFallback>
+                    </Avatar>
+                    <View className="flex-1 rounded-lg bg-muted/60 px-3 py-2">
+                      <Text className="text-[12px] font-semibold text-foreground">
+                        {cAuthor?.name ?? 'User'}
+                        <Text className="font-normal text-muted-foreground">
+                          {' · '}
+                          {formatRelativeTime(c.createdAt)}
+                        </Text>
+                      </Text>
+                      <Text className="text-[13px] leading-[18px] text-foreground">
+                        {c.body}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+          <View className="flex-row items-center gap-2">
+            <Input
+              value={draft}
+              onChangeText={setDraft}
+              placeholder="Add a comment..."
+              className="flex-1"
+            />
+            <Button
+              size="sm"
+              disabled={draft.trim().length < 2 || posting}
+              onPress={() => void submitComment()}>
+              <Text className="text-[12px] font-semibold text-primary-foreground">
+                {posting ? '...' : 'Send'}
+              </Text>
+            </Button>
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 }

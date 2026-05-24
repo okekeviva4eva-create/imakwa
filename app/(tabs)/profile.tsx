@@ -44,12 +44,27 @@ export default function ProfileScreen() {
     [topics, followedTopicIds],
   );
 
-  if (!me) return null;
-  const initials = me.name
+  // Fallback identity from auth user while profile row hydrates
+  const fallbackHandle = authUser?.email
+    ? authUser.email.split('@')[0]?.replace(/[^a-z0-9_]/gi, '_').slice(0, 20)
+    : undefined;
+  const display = me ?? {
+    id: meId,
+    name: fallbackHandle ?? 'You',
+    handle: fallbackHandle ?? 'you',
+    bio: 'New voice on Imakwa.',
+    state: 'Regional',
+    credentials: undefined,
+    followers: 0,
+    following: 0,
+    questionsAsked: myQuestions.length,
+    answersGiven: myAnswers.length,
+  };
+  const initials = display.name
     .split(' ')
     .map((p) => p[0])
     .slice(0, 2)
-    .join('');
+    .join('') || 'U';
 
   const renderTabContent = () => {
     if (tab === 'questions') {
@@ -147,18 +162,18 @@ export default function ProfileScreen() {
             </Avatar>
             <View className="flex-1 gap-1.5">
               <View className="flex-row items-center gap-2">
-                <Text className="text-[20px] font-bold text-foreground">{me.name}</Text>
+                <Text className="text-[20px] font-bold text-foreground">{display.name}</Text>
                 <Badge variant="secondary">
                   <Text className="text-[10px] font-semibold text-secondary-foreground">
-                    @{me.handle}
+                    @{display.handle}
                   </Text>
                 </Badge>
               </View>
               <View className="flex-row items-center gap-1">
                 <MapPin size={12} color="hsl(150 10% 40%)" />
-                <Text className="text-[12px] text-muted-foreground">{me.state} State</Text>
+                <Text className="text-[12px] text-muted-foreground">{display.state} State</Text>
               </View>
-              <Text className="text-[13px] leading-[18px] text-foreground">{me.bio}</Text>
+              <Text className="text-[13px] leading-[18px] text-foreground">{display.bio}</Text>
               {authUser?.email && (
                 <Text className="text-[12px] text-muted-foreground">
                   Signed in as {authUser.email}
@@ -174,10 +189,10 @@ export default function ProfileScreen() {
 
           {/* Stats */}
           <View className="flex-row gap-3">
-            <Stat label="Questions" value={formatCount(me.questionsAsked)} />
-            <Stat label="Answers" value={formatCount(me.answersGiven)} />
-            <Stat label="Followers" value={formatCount(me.followers)} />
-            <Stat label="Following" value={formatCount(me.following)} />
+            <Stat label="Questions" value={formatCount(display.questionsAsked)} />
+            <Stat label="Answers" value={formatCount(display.answersGiven)} />
+            <Stat label="Followers" value={formatCount(display.followers)} />
+            <Stat label="Following" value={formatCount(display.following)} />
           </View>
 
           <Card className="p-3 flex-row items-center gap-3 bg-accent/15 border-accent/30">

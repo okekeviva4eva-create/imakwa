@@ -34,6 +34,12 @@ import {
 } from 'expo-router';
 
 import { useAuthStore } from '@/lib/authStore';
+import {
+  ensureMyProfile,
+  subscribeRealtime,
+  unsubscribeRealtime,
+  useStore,
+} from '@/lib/store';
 
 /**
  * Custom ErrorBoundary that reports React render errors to the parent window (Bilt preview iframe)
@@ -57,7 +63,10 @@ void SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const { colorScheme, setColorScheme } = useColorScheme();
   const status = useAuthStore((s) => s.status);
+  const authUser = useAuthStore((s) => s.user);
   const initAuth = useAuthStore((s) => s.init);
+  const loadAll = useStore((s) => s.loadAll);
+  const resetStore = useStore((s) => s.reset);
   const segments = useSegments();
   const router = useRouter();
 
@@ -163,6 +172,32 @@ export default function RootLayout() {
   useEffect(() => {
     void initAuth();
   }, [initAuth]);
+
+  // Hydrate data store + realtime when auth state changes
+  useEffect(() => {
+    if (status === 'authenticated' && authUser) {
+      void (async () => {
+        try {
+          await ensureMyProfile({
+            id: authUser.id,
+            email: authUser.email,
+            user_metadata: authUser.user_metadata,
+          });
+        } catch {
+          // ignore — trigger usually creates the profile
+        }
+        await loadAll(authUser.id);
+        subscribeRealtime(authUser.id);
+      })();
+      return () => {
+        unsubscribeRealtime();
+      };
+    }
+    if (status === 'unauthenticated') {
+      resetStore();
+    }
+    return undefined;
+  }, [status, authUser, loadAll, resetStore]);
 
   // Auth-aware redirects: keep unauthenticated users in (auth), authenticated users in (tabs).
   useEffect(() => {

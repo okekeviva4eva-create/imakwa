@@ -16,10 +16,11 @@ export default function AskScreen() {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [selectedTopicIds, setSelectedTopicIds] = useState<string[]>([]);
+  const [posting, setPosting] = useState(false);
 
   const titleOk = title.trim().length >= 15 && title.trim().endsWith('?');
   const topicsOk = selectedTopicIds.length > 0 && selectedTopicIds.length <= 5;
-  const canPost = titleOk && topicsOk;
+  const canPost = titleOk && topicsOk && !posting;
 
   const toggleTopic = (id: string) => {
     setSelectedTopicIds((prev) => {
@@ -29,19 +30,30 @@ export default function AskScreen() {
     });
   };
 
-  const onPost = () => {
+  const onPost = async () => {
     if (!canPost) return;
-    const id = addQuestion({
-      title: title.trim(),
-      body: body.trim(),
-      topicIds: selectedTopicIds,
-    });
-    toast.toast({
-      title: 'Question posted',
-      description: 'The community will weigh in shortly.',
-      variant: 'success',
-    });
-    router.replace(`/question/${id}`);
+    setPosting(true);
+    try {
+      const id = await addQuestion({
+        title: title.trim(),
+        body: body.trim(),
+        topicIds: selectedTopicIds,
+      });
+      toast.toast({
+        title: 'Question posted',
+        description: 'The community will weigh in shortly.',
+        variant: 'success',
+      });
+      router.replace(`/question/${id}`);
+    } catch (e) {
+      toast.toast({
+        title: 'Could not post',
+        description: e instanceof Error ? e.message : 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setPosting(false);
+    }
   };
 
   const stateTopics = topics.filter((t) => t.category === 'State');
@@ -57,13 +69,13 @@ export default function AskScreen() {
           <X size={18} color="hsl(150 30% 8%)" />
         </Pressable>
         <Text className="text-[16px] font-bold">Ask a question</Text>
-        <Button size="sm" disabled={!canPost} onPress={onPost}>
+        <Button size="sm" disabled={!canPost} onPress={() => void onPost()}>
           <Text
             className={cn(
               'text-[13px] font-semibold',
               canPost ? 'text-primary-foreground' : 'text-muted-foreground',
             )}>
-            Post
+            {posting ? 'Posting...' : 'Post'}
           </Text>
         </Button>
       </View>
