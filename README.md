@@ -1,160 +1,129 @@
-# Welcome to your Bilt project
+# Imakwa
 
-[![Built with Bilt](https://img.shields.io/endpoint?url=https%3A%2F%2Fapp.bilt.me%2Fapi%2Fbadge)](https://bilt.me)
+A React Native mobile application built with Expo and TypeScript.
 
-## Project info
+## Project Overview
 
-**Preview URL**: https://app.bilt.me/project/c9757579-71ba-4428-b864-825d43c0cb58/preview
+Imakwa is a mobile app project built using modern web technologies and cross-platform frameworks.
 
-**Project ID**: `c9757579-71ba-4428-b864-825d43c0cb58`
-
-## How can I edit this app?
-
-There are several ways of editing your application.
-
-**Use Bilt**
-
-Simply visit your [Bilt Project](https://app.bilt.me/agent/c9757579-71ba-4428-b864-825d43c0cb58) and start sending messages. Describe what you want to change, add, or fix in natural language.
-
-Changes made via Bilt are instant - just send a message and your app updates.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can export the source code from Bilt and make changes directly.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Export and clone your Bilt project.
-# (Download source from Bilt or connect to your git repo)
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm install
-
-# Step 4: Start the Expo development server.
-npx expo start
-```
-
-Scan the QR code with Expo Go on your phone to see your app running locally.
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
+## Technologies Used
 
 This project is built with:
 
-- React Native
-- Expo
-- TypeScript
-- AsyncStorage (local data persistence)
-- Expo Router (navigation)
+- **React Native** - Cross-platform mobile framework
+- **Expo** - Development platform and tooling for React Native
+- **TypeScript** - Type-safe JavaScript
+- **Expo Router** - Navigation and routing
+- **AsyncStorage** - Local data persistence
+- **TailwindCSS** - Utility-first CSS framework (via Nativewind)
+- **Zustand** - State management
+- **React Query** - Data fetching and caching
+- **Supabase** - Backend and authentication
+- **React Hook Form** - Form management
+- **Zod** - Schema validation
 
-All generated automatically by Bilt from your natural language instructions.
+## Getting Started
 
-## How can I test this project?
+### Prerequisites
 
-**Option 1: Instant Preview (Recommended)**
+- Node.js (v16 or higher)
+- npm or yarn
+- Expo CLI (optional, but recommended)
 
-Open the preview URL in your browser: `https://app.bilt.me/project/c9757579-71ba-4428-b864-825d43c0cb58/preview`
+### Installation
 
-Scan the QR code with Expo Go ([iOS](https://apps.apple.com/app/expo-go/id982107779) | [Android](https://play.google.com/store/apps/details?id=host.exp.exponent)) on your phone.
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/okekeviva4eva-create/imakwa.git
+   cd imakwa
+   ```
 
-**Option 2: Run Locally**
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-```sh
-npm install
-npx expo start
+3. **Start the development server:**
+   ```bash
+   npx expo start
+   ```
+
+4. **Run on your device or emulator:**
+   - **iOS:** Press `i` in the terminal or scan QR code with Camera app
+   - **Android:** Press `a` in the terminal or scan QR code with Expo Go app
+   - **Web:** Press `w` in the terminal
+
+## Development
+
+### Running on Different Platforms
+
+**iOS:**
+```bash
+npm run ios
 ```
 
-Then scan the QR code with Expo Go.
-
-## How can I deploy this project?
-
-Go to your [Bilt Project](https://app.bilt.me/agent/c9757579-71ba-4428-b864-825d43c0cb58), after that go to Settings -> App Store.
-
-### Deploy with Bilt
-
-Simply send a message to your Bilt project: "Deploy this app to production"
-
-Bilt will handle the build and provide you with download links or submission-ready builds.
-
-## How can I make changes to my app?
-
-**Via Bilt (Easiest)**
-
-Visit your [Bilt Project](https://app.bilt.me/agent/c9757579-71ba-4428-b864-825d43c0cb58) and send a message describing what you want:
-
-- "Add a dark mode toggle"
-- "Change the button color to blue"
-- "Add a new screen for user settings"
-- "Fix the navigation bar spacing"
-
-Bilt understands natural language and updates your app automatically.
-
-**Via Code**
-
-Export the source, make changes in your IDE, and test locally with `npx expo start`.
-
-## Can I use this with the MCP protocol?
-
-Yes! Bilt is available as a remote MCP server at `https://mcp.bilt.me/mcp`.
-
-Connect any MCP-compatible AI agent (Claude Desktop, OpenClaw, etc.) to programmatically build and modify mobile apps.
-
-**Example MCP integration:**
-
-```json
-{
-  "mcpServers": {
-    "bilt": {
-      "transport": {
-        "type": "sse",
-        "url": "https://mcp.bilt.me/mcp/sse",
-        "headers": {
-          "Authorization": "Bearer YOUR_API_KEY"
-        }
-      }
-    }
-  }
-}
+**Android:**
+```bash
+npm run android
 ```
 
-Read more:
+**Web:**
+```bash
+npx expo start --web
+```
 
-- [Bilt MCP Documentation](https://bilt.me/docs)
-- [MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.buildingapplications%2Fmcp/versions/latest)
+### Code Quality
 
-## Need help?
+**Linting:**
+```bash
+npm run lint
+```
 
-- 📚 [Bilt Documentation](https://bilt.me/docs)
-- 💬 [Discord Community](https://discord.gg/3FqNgmSYdZ)
-- 🐦 [Twitter Updates](https://twitter.com/biltmeanapp)
-- 📧 Email: support@bilt.me
+**Code Formatting:**
+```bash
+npm run format
+```
+
+**Check format without modifying:**
+```bash
+npm run format:check
+```
+
+## Project Structure
+
+```
+imakwa/
+├── app/              # Expo Router pages and layouts
+├── components/       # Reusable UI components
+├── lib/             # Utilities and helper functions
+├── hooks/           # Custom React hooks
+├── styles/          # Global styles and theme
+├── package.json     # Dependencies and scripts
+└── app.config.ts    # Expo configuration
+```
+
+## Features
+
+- Cross-platform mobile app (iOS, Android, Web)
+- Type-safe development with TypeScript
+- Local data persistence with AsyncStorage
+- Modern UI with TailwindCSS and Nativewind
+- State management with Zustand
+- Form handling with React Hook Form
+- Real-time backend integration with Supabase
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For issues and questions, please open an issue on GitHub or contact the project maintainers.
 
 ---
 
-<div align="center">
-
-**Built by AI. No code required.** ✨
-
-[Try Bilt](https://bilt.me) • [View Docs](https://bilt.me/docs) • [Docs MCP Server](https://bilt.me/docs/mcp)
-
-</div>
+**Built with ❤️ using React Native and Expo**
